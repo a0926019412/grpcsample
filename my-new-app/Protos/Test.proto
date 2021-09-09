@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "Test.GRPC";
+
+package test.grpc;
+
+service MyTest {
+  rpc GetTest (MyTestParameter) returns (MyTestResponse);
+  rpc GetTestStream (MyTestParameter) returns (stream MyTestResponse);
+}
+
+message MyTestParameter {
+    string par = 1;
+}
+
+message MyTestResponse {
+  int32 res = 1;
+}
