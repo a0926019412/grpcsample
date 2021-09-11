@@ -6,21 +6,28 @@ export class GrpcData extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { responsetest : "", loading: true };
+    this.state = { responseTest : "",responseTestStreaming : "", loading: true };
   }
 
   componentDidMount() {
     this.getGrpcTestData();
   }
 
-  static renderGrpcTest(responsetest) {
+  static renderGrpcTest(responseTest,responseTestStreaming) {
     return (
-      <div>{responsetest}</div>
+      <div>
+
+      {responseTest}
+
+      <br/>
+      {responseTestStreaming}
+      </div>
+
     );
   }
 
   render() {
-    let contents = GrpcData.renderGrpcTest(this.state.responsetest);
+    let contents = GrpcData.renderGrpcTest(this.state.responseTest,this.state.responseTestStreaming);
     return (
      
       <div>
@@ -30,10 +37,10 @@ export class GrpcData extends Component {
   }
 
     getGrpcTestData() {
-      var client = new MyTestClient('https://localhost:5001');
+      let client = new MyTestClient('https://localhost:5001');
 
-      var request = new MyTestParameter();
-      var getres = "";
+      let request = new MyTestParameter();
+      
       request.setPar('test');
       
       client.getTest(request, {}, (err, response) => {
@@ -41,17 +48,44 @@ export class GrpcData extends Component {
         //console.log(response);
         if(response)
         { 
-          getres = response.getRes();
+          let getRes = "";
+          getRes = response.getRes();
           //console.log( "get response" + getres);
-          this.setState({ responsetest: getres, loading: false });
-          console.log("update state" + this.state.responsetest);
+          this.setState({ responseTest: getRes, loading: false });
+          console.log("update state" + this.state.responseTest);
         }
         else
-        console.log("unkown response");
-          
-    
+          console.log("unkown response (responseTest)");
       });
-     
-   
+      var stream = client.getTestStream(request,{});
+      stream.on('data', function(response) {
+        let getRes = response.getRes();
+        console.log(getRes);
+        this.setState({ responseTestStreaming: getRes, loading: false });
+
+      });
+      stream.on('status', function(status) {
+        // console.log(status.code);
+        // console.log(status.details);
+        // console.log(status.metadata);
+      });
+      stream.on('end', function(end) {
+        // stream end signal
+      });
+
+      // client.getTest(request, {}, (err, response) => {
+      //   // console.log(err);
+      //   //console.log(response);
+      //   if(response)
+      //   { 
+      //     getres = response.getRes();
+      //     //console.log( "get response" + getres);
+      //     this.setState({ responsetest: getres, loading: false });
+      //     console.log("update state" + this.state.responseTest);
+      //   }
+      //   else
+      //     console.log("unkown response (responseTest)");
+      // });
   }
+
 }
